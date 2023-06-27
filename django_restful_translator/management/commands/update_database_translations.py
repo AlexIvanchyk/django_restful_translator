@@ -50,13 +50,16 @@ class Command(BaseCommand):
                 model = next((m for m in translatable_models if m._meta.model_name == model_name), None)
                 if not model:
                     continue
+                field_value = entry.msgstr
+                if field_value == "":
+                    continue
                 # Fetch or create the Translation object
                 trans, created = Translation.objects.get_or_create(
                     content_type=ContentType.objects.get_for_model(model),
                     object_id=object_id,
                     field_name=field_name,
                     language=language,
-                    defaults={"field_value": entry.msgstr}
+                    defaults={"field_value": field_value}
                 )
                 # If the Translation object already existed, update it
                 if not created:

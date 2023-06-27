@@ -34,16 +34,20 @@ class Command(BaseCommand):
                 objects = model.objects.all().prefetch_related('translations')
                 for obj in objects:
                     for field_name in model.translatable_fields:
+                        original_field_value = getattr(obj, field_name)
+                        if original_field_value is None or original_field_value == '':
+                            self.stdout.write(
+                                f'Skipping {model._meta.model_name} id {obj.id} due to None value for field {field_name}')
+                            continue
                         trans = next((t for t in obj.translations.all() if
                                       t.field_name == field_name and t.language == language), None)
                         if not trans:
                             # If translation doesn't exist, create a blank one for the .po file
-
                             trans = Translation(
                                 content_object=obj,
                                 field_name=field_name,
                                 language=language,
-                                field_value=getattr(obj, field_name) if language == settings.LANGUAGE_CODE else ""
+                                field_value=original_field_value if language == settings.LANGUAGE_CODE else ""
                             )
                         self.write_to_po_file(po, trans)
             # Save and close the .po file for this language
