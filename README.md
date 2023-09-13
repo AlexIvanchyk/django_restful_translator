@@ -137,10 +137,8 @@ Our library provides an easy way to automatically translate fields in your Djang
 
 For Google Translate v2:
 
-```python
-# settings.py
-GOOGLE_APPLICATION_CREDENTIALS = 'your_google_application_credentials_here'
-```
+You can use the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to provide the location of a credential JSON file.
+https://cloud.google.com/docs/authentication/application-default-credentials#GAC
 
 For AWS Translate:
 
