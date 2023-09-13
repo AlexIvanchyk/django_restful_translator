@@ -15,6 +15,7 @@ class Translation(models.Model):
 
     class Meta:
         unique_together = ('content_type', 'object_id', 'language', 'field_name',)
+        ordering = ('-created_at',)
 
     def __str__(self):
         return f'{self.content_type}__{self.field_name}__{self.object_id}'

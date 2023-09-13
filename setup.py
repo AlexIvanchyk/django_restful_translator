@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django_restful_translator',
-    version='0.1.4',
+    version='0.2.0',
     author='Alex Ivanchyk',
     author_email='alexander.ivanchik@gmail.com',
     description='A Django application providing translation functionalities for Django Rest Framework',
@@ -12,8 +12,10 @@ setup(
     packages=find_packages(),
     install_requires=[
         'Django>=3.2',
-        'djangorestframework>=3.12',
+        'djangorestframework>=3.11',
         'polib>=1.1',
+        'google-cloud-translate>=2.0.4',
+        'boto3>=1.26.31'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -22,6 +24,6 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     license='MIT',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     keywords='django rest-framework translation i18n',
 )

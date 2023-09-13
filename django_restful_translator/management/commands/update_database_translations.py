@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 continue
 
             # Open the .po file for this language
-            po_file_path = os.path.join(settings.SITE_ROOT, 'drt_locale', language, 'LC_MESSAGES', 'django.po')
+            po_file_path = os.path.join(settings.BASE_DIR, 'drt_locale', language, 'LC_MESSAGES', 'django.po')
 
             # Check the last modification time of the .po file
             if os.path.isfile(po_file_path):
@@ -38,6 +38,7 @@ class Command(BaseCommand):
 
                 # Only proceed if the .po file is newer than the last update in the database
                 if po_file_mod_time <= last_translation_update:
+                    print(f"Skipping {language} because the .po file is older than the last update in the database")
                     continue
 
             if not os.path.isfile(po_file_path):

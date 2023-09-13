@@ -10,9 +10,11 @@
 
 - **Translation management**: Admin inlines for managing translations from the Django Admin site.
 
-- **Translation synchronization**: Commands `generatelocales` and `update_database_translations` export translations to `.po` files and import them back into the database, keeping translations synchronized across different environments.
-
 - **REST API support**: Provided serializers (`TranslatableDBSerializer`, `TranslatableDBDictSerializer`, `TranslatableGettextSerializer`, `TranslatableGettextDictSerializer`) ensure translated fields are properly serialized in API responses.
+
+- **Translation synchronization**: Commands `generate_locales` and `update_database_translations` export translations to `.po` files and import them back into the database, keeping translations synchronized across different environments.
+
+- **Automatic Translation**: The library supports automatic translation of model fields through popular translation providers like Google Translate and AWS Translate. The feature is configurable and can be run via an admin command.
 
 ## Advantages
 
@@ -112,16 +114,68 @@ from django_restful_translator.admin import TranslationInline
 class YourModelAdmin(admin.ModelAdmin):
     inlines = [TranslationInline,]
 ```
-5.When querying your translatable models, you can optimize your database queries by using `prefetch_related` to prefetch translations.
+5. When querying your translatable models, you can optimize your database queries by using `prefetch_related` to prefetch translations.
 ```python
 YourModel.objects.all().prefetch_related('translations')
 ```
 6. Run the provided management commands to generate `.po` files and update the database with translations.
 
 ```bash
-python manage.py generatelocales
+python manage.py generate_locales
 python manage.py update_database_translations
 ```
+
+## Automatic Translation Feature Guide
+
+### Overview
+
+Our library provides an easy way to automatically translate fields in your Django models using popular translation providers such as Google Translate and  AWS Translate. This guide will help you configure and use this feature.
+
+### Requirements
+
+- Make sure the necessary credentials for your chosen translation provider are available in your Django settings file.
+
+For Google Translate v2:
+
+```python
+# settings.py
+GOOGLE_APPLICATION_CREDENTIALS = 'your_google_application_credentials_here'
+```
+
+For AWS Translate:
+
+```python
+# settings.py
+AWS_ACCESS_KEY_ID = 'your aws access key here'
+AWS_SECRET_ACCESS_KEY = 'your aws secret access key here'
+AWS_REGION_NAME = 'your aws region name here'
+```
+
+### Running the Admin Command
+
+You can use the provided admin command to translate your model fields. The command accepts the following arguments:
+
+- `--language`: The target language code to which you want to translate.
+- `--provider`: The translation provider to use Google or AWS.
+- `--all`: Use this flag if you want to overwrite existing translations.
+
+Run the admin command as follows:
+
+```bash
+python manage.py translate_models --language=es --provider=google_v2
+```
+
+This will translate all translatable fields to Spanish using Google Translate.
+
+To overwrite existing translations:
+
+```bash
+python manage.py translate_models --language=es --provider=google_v2 --all
+```
+
+### Verifying Translations
+
+After running the command, your translated text should now be available and stored in your database. You can verify this through your Django admin panel or by querying the models directly.
 
 ## Contributing
 

@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.utils import translation
-from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from django_restful_translator.models import TranslatableModel
@@ -57,8 +56,12 @@ class TranslatableGettextDictSerializer(serializers.ModelSerializer):
         for field in instance.translatable_fields:
             translations = {}
             for lang_code, lang_name in settings.LANGUAGES:
+                value = getattr(instance, field)
+                if lang_code == settings.LANGUAGE_CODE:
+                    translations[lang_code] = value
                 with translation.override(lang_code):
-                    value = getattr(instance, field)
-                    translations[lang_code] = _(value)
+                    translated_value = GetTextCharField().to_representation(value)
+                    if value != translated_value:
+                        translations[lang_code] = translated_value
             data[field] = translations
         return data

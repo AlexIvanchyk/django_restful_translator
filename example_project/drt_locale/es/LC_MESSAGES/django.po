@@ -1,0 +1,17 @@
+#
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# examplemodel__name__1
+msgid "Hello"
+msgstr "Hola"
+
+# examplemodel__description__1
+msgid "This is a description"
+msgstr "Esta es una descripción"
+
+# examplemodel__name__2
+msgid "World"
+msgstr "Mundo"
