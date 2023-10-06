@@ -122,7 +122,24 @@ YourModel.objects.all().prefetch_related('translations')
 
 ```bash
 python manage.py generate_locales
+```
+```bash
 python manage.py update_database_translations
+```
+7. Converting Existing `.po` Files to DRT Format. 
+Utilize the management command `convert_locales_to_drt_format` to transform existing `.po` files into a format suitable for use with the Django Restful Translator (DRT). The command accepts the following arguments:
+- `--locale`: The directory where the existing `.po` files are located and will be read from. 
+- `--remove-used`: When this option is used, the entries that are converted and added to the new `.po` file formatted for DRT will be removed from the original `.po` file, keeping it clean from already processed entries.
+
+
+To convert `.po` files without modifying the original file:
+
+```bash
+python manage.py convert_locales_to_drt_format --locale locale
+```
+To remove entries in the original `.po` file that are used/converted in the new DRT format:
+```bash
+python manage.py convert_locales_to_drt_format --locale locale --remove-used
 ```
 
 ## Automatic Translation Feature Guide

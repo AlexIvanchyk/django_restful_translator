@@ -1,7 +1,9 @@
+import os
 from django.conf import settings
 from django.apps import apps
 from django.utils.translation import get_language
 from django_restful_translator.models import TranslatableModel, Translation
+
 
 def get_translation(instance, field_name, as_dict=False):
     translations = list(instance.translations.all())
@@ -46,3 +48,16 @@ def fetch_translatable_fields(language):
                 collected_translations.append(trans)
     return collected_translations
 
+
+def get_po_file_path(language):
+    po_path = os.path.join(settings.BASE_DIR, 'drt_locale', language, 'LC_MESSAGES')
+    os.makedirs(po_path, exist_ok=True)
+    po_file_path = os.path.join(po_path, 'django.po')
+    return po_file_path
+
+
+def get_po_metadata():
+    return {
+        'Content-Type': 'text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding': '8bit',
+    }

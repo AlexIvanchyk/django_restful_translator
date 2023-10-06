@@ -4,7 +4,7 @@ import polib
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from django_restful_translator.utils import fetch_translatable_fields
+from django_restful_translator.utils import fetch_translatable_fields, get_po_file_path, get_po_metadata
 
 
 class Command(BaseCommand):
@@ -13,10 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for language_set in settings.LANGUAGES:
             language = language_set[0]
-            po_path = os.path.join(settings.BASE_DIR, 'drt_locale', language, 'LC_MESSAGES')
-            os.makedirs(po_path, exist_ok=True)
-            po_file_path = os.path.join(po_path, 'django.po')
-
+            po_file_path = get_po_file_path(language)
             if os.path.isfile(po_file_path):
                 po = polib.pofile(po_file_path)
             else:
@@ -27,10 +24,7 @@ class Command(BaseCommand):
             for trans in translations:
                 self.write_to_po_file(po, trans)
 
-            po.metadata = {
-                'Content-Type': 'text/plain; charset=UTF-8',
-                'Content-Transfer-Encoding': '8bit',
-            }
+            po.metadata = get_po_metadata()
             po.save(po_file_path)
 
     def write_to_po_file(self, po, trans):

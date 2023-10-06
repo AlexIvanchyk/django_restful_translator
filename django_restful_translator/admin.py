@@ -37,7 +37,6 @@ class TranslationInline(GenericTabularInline):
     form = TranslationForm
     formset = TranslationFormSet
     extra = 0
-    ...
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
