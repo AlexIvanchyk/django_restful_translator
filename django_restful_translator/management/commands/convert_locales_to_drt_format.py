@@ -1,10 +1,9 @@
 import os
-
 import polib
+import threading
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
 from django_restful_translator.models import TranslatableModel
 from django_restful_translator.utils import get_po_file_path, get_po_metadata
 
@@ -26,11 +25,17 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        threads = []
         locale = options['locale']
         remove_used = options['remove_used']
 
         for language_code, _ in settings.LANGUAGES:
-            self.process_language(locale, language_code, remove_used)
+            t = threading.Thread(target=self.process_language, args=(locale, language_code, remove_used))
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
 
     def process_language(self, locale, language_code, remove_used):
         read_po_file_path = os.path.join(settings.BASE_DIR, locale, language_code, 'LC_MESSAGES', 'django.po')

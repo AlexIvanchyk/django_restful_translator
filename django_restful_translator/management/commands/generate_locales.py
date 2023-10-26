@@ -1,31 +1,30 @@
 import os
-
 import polib
+import threading
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
 from django_restful_translator.utils import fetch_translatable_fields, get_po_file_path, get_po_metadata
 
 
 class Command(BaseCommand):
     help = 'Generate .po files from DB translations'
 
-    def handle(self, *args, **options):
-        for language_set in settings.LANGUAGES:
-            language = language_set[0]
-            po_file_path = get_po_file_path(language)
-            if os.path.isfile(po_file_path):
-                po = polib.pofile(po_file_path)
-            else:
-                po = polib.POFile()
+    def generate_po_for_language(self, language_set):
+        language = language_set[0]
+        po_file_path = get_po_file_path(language)
 
-            translations = fetch_translatable_fields(language)
+        if os.path.isfile(po_file_path):
+            po = polib.pofile(po_file_path)
+        else:
+            po = polib.POFile()
 
-            for trans in translations:
-                self.write_to_po_file(po, trans)
+        translations = fetch_translatable_fields(language)
 
-            po.metadata = get_po_metadata()
-            po.save(po_file_path)
+        for trans in translations:
+            self.write_to_po_file(po, trans)
+
+        po.metadata = get_po_metadata()
+        po.save(po_file_path)
 
     def write_to_po_file(self, po, trans):
         entry = polib.POEntry(
@@ -36,3 +35,14 @@ class Command(BaseCommand):
         if not trans.field_value:
             entry.flags.append('fuzzy')
         po.append(entry)
+
+    def handle(self, *args, **options):
+        threads = []
+
+        for language_set in settings.LANGUAGES:
+            t = threading.Thread(target=self.generate_po_for_language, args=(language_set,))
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()

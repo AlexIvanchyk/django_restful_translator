@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django_restful_translator.translation_providers import TranslationProvider
 from django_restful_translator.utils import fetch_translatable_fields
 from django.conf import settings
+import threading
 
 
 class Command(BaseCommand):
@@ -26,6 +27,18 @@ class Command(BaseCommand):
             help='Translate even existing translations'
         )
 
+    def translate_item(self, trans, provider, language, translate_all):
+        if len(trans.field_value) > 0 and not translate_all:
+            return
+        text = getattr(trans.content_object, trans.field_name)
+        translated_text = provider.translate_text(text, settings.LANGUAGE_CODE, language)
+
+        trans.field_value = translated_text
+        trans.save()
+
+        self.stdout.write(
+            f'Translated {trans.content_object._meta.model_name} field {trans.field_name} to {language}')
+
     def handle(self, *args, **options):
         language = options['language']
         provider_name = options['provider']
@@ -48,14 +61,12 @@ class Command(BaseCommand):
         provider = provider_class()
         translations = fetch_translatable_fields(language)
 
+        threads = []
+
         for trans in translations:
-            if len(trans.field_value) > 0 and not translate_all:
-                continue
-            text = getattr(trans.content_object, trans.field_name)
-            translated_text = provider.translate_text(text, settings.LANGUAGE_CODE, language)
+            t = threading.Thread(target=self.translate_item, args=(trans, provider, language, translate_all))
+            t.start()
+            threads.append(t)
 
-            trans.field_value = translated_text
-            trans.save()
-
-            self.stdout.write(
-                f'Translated {trans.content_object._meta.model_name} field {trans.field_name} to {language}')
+        for t in threads:
+            t.join()
