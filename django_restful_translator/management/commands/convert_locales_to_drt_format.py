@@ -1,9 +1,12 @@
 import os
-import polib
 import threading
+
+import polib
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import models
+
 from django_restful_translator.models import TranslatableModel
 from django_restful_translator.utils import get_po_file_path, get_po_metadata
 
@@ -58,9 +61,9 @@ class Command(BaseCommand):
         used_entries = []
 
         for entry in po:
-            obj, field_name = self.find_original_objects(entry.msgid)
-            if obj is not None:
-                new_entry = self.create_new_entry(entry, obj, field_name)
+            objects_with_fields = self.find_original_objects(entry.msgid)
+            if objects_with_fields:
+                new_entry = self.create_new_entry(entry, objects_with_fields)
                 new_po.append(new_entry)
                 used_entries.append(entry)
 
@@ -71,12 +74,15 @@ class Command(BaseCommand):
         for entry in used_entries:
             po.remove(entry)
 
-    def create_new_entry(self, entry, obj, field_name):
-        tcomment = f"{obj._meta.model_name}__{field_name}__{obj.id}" if obj else ""
+    def create_new_entry(self, entry, objects_with_fields):
+        tcomments = [
+            f"{obj._meta.model_name}__{field_name}__{obj.id}"
+            for obj, field_name in objects_with_fields
+        ]
         return polib.POEntry(
             msgid=entry.msgid,
             msgstr=entry.msgstr,
-            tcomment=tcomment
+            tcomment="\n".join(tcomments)
         )
 
     def find_original_objects(self, msgid):
@@ -87,12 +93,22 @@ class Command(BaseCommand):
             model for model in apps.get_models() if issubclass(model, TranslatableModel)
         ]
 
-        for model in translatable_models:
-            for field_name in getattr(model, 'translatable_fields', []):
-                obj = model.objects.filter(**{field_name: msgid}).first()
-                if obj:
-                    self.found_objects_cache[msgid] = (obj, field_name)
-                    return obj, field_name
+        objects_found = []
 
-        self.found_objects_cache[msgid] = (None, None)
-        return None, None
+        for model in translatable_models:
+            filters = models.Q()
+            for field_name in getattr(model, 'translatable_fields', []):
+                filters |= models.Q(**{field_name: msgid})
+
+            objs = model.objects.filter(filters)
+
+            for obj in objs:
+                field_name = next(
+                    (field for field in getattr(model, 'translatable_fields', []) if getattr(obj, field) == msgid),
+                    None
+                )
+                if field_name:
+                    objects_found.append((obj, field_name))
+
+        self.found_objects_cache[msgid] = objects_found if objects_found else None
+        return self.found_objects_cache[msgid]

@@ -1,8 +1,10 @@
 import os
-import polib
 import threading
+
+import polib
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
 from django_restful_translator.utils import fetch_translatable_fields, get_po_file_path, get_po_metadata
 
 
@@ -27,14 +29,26 @@ class Command(BaseCommand):
         po.save(po_file_path)
 
     def write_to_po_file(self, po, trans):
-        entry = polib.POEntry(
-            msgid=getattr(trans.content_object, trans.field_name),
-            msgstr=trans.field_value,
-            tcomment=f"{trans.content_object._meta.model_name}__{trans.field_name}__{trans.object_id}"
-        )
-        if not trans.field_value:
-            entry.flags.append('fuzzy')
-        po.append(entry)
+        msgid_value = getattr(trans.content_object, trans.field_name)
+
+        # Find existing entry in po file by msgid
+        existing_entry = po.find(msgid_value)
+
+        comment = f"{trans.content_object._meta.model_name}__{trans.field_name}__{trans.object_id}"
+
+        # If the msgid already exists, append a comment; otherwise, add a new entry.
+        if existing_entry:
+            if comment not in existing_entry.tcomment:
+                existing_entry.tcomment += f"\n{comment}"
+        else:
+            entry = polib.POEntry(
+                msgid=msgid_value,
+                msgstr=trans.field_value,
+                tcomment=comment
+            )
+            if not trans.field_value:
+                entry.flags.append('fuzzy')
+            po.append(entry)
 
     def handle(self, *args, **options):
         threads = []

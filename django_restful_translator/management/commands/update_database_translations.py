@@ -1,11 +1,13 @@
 import os
+import threading
+
 import polib
 from django.apps import apps
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
+
 from django_restful_translator.models import TranslatableModel, Translation
-import threading
 
 
 class Command(BaseCommand):
@@ -45,25 +47,26 @@ class Command(BaseCommand):
 
         # Iterate over each entry in the .po file
         for entry in po:
-            model_name, field_name, object_id = entry.tcomment.split("__")
-            model = next((m for m in translatable_models if m._meta.model_name == model_name), None)
-            if not model:
-                continue
-            field_value = entry.msgstr
-            if field_value == "":
-                continue
-            # Fetch or create the Translation object
-            trans, created = Translation.objects.update_or_create(
-                content_type=ContentType.objects.get_for_model(model),
-                object_id=object_id,
-                field_name=field_name,
-                language=language,
-                defaults={"field_value": field_value}
-            )
-            # If the Translation object already existed, update it
-            if not created:
-                trans.field_value = entry.msgstr
-                trans.save()
+            for comment in entry.tcomment.splitlines():
+                model_name, field_name, object_id = comment.split("__")
+                model = next((m for m in translatable_models if m._meta.model_name == model_name), None)
+                if not model:
+                    continue
+                field_value = entry.msgstr
+                if field_value == "":
+                    continue
+                # Fetch or create the Translation object
+                trans, created = Translation.objects.update_or_create(
+                    content_type=ContentType.objects.get_for_model(model),
+                    object_id=object_id,
+                    field_name=field_name,
+                    language=language,
+                    defaults={"field_value": field_value}
+                )
+                # If the Translation object already existed, update it
+                if not created:
+                    trans.field_value = entry.msgstr
+                    trans.save()
 
     def handle(self, *args, **options):
         threads = []

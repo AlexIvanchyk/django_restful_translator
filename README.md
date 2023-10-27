@@ -173,6 +173,8 @@ You can use the provided admin command to translate your model fields. The comma
 - `--language`: The target language code to which you want to translate.
 - `--provider`: The translation provider to use Google or AWS.
 - `--all`: Use this flag if you want to overwrite existing translations.
+- `--workers`: (Optional) Number of worker threads to use for concurrent processing. Default is 4.
+- `--batch_size`: (Optional) Number of translations to fetch from the database at once. Helps in optimizing memory usage. Default is 200.
 
 Run the admin command as follows:
 

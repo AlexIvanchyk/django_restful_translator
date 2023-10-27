@@ -1,8 +1,10 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
+
 from django_restful_translator.translation_providers import TranslationProvider
 from django_restful_translator.utils import fetch_translatable_fields
-from django.conf import settings
-import threading
 
 
 class Command(BaseCommand):
@@ -26,6 +28,18 @@ class Command(BaseCommand):
             action='store_true',
             help='Translate even existing translations'
         )
+        parser.add_argument(
+            '--workers',
+            type=int,
+            default=4,
+            help='Number of worker threads to use for translation'
+        )
+        parser.add_argument(
+            '--batch-size',
+            type=int,
+            default=200,
+            help='Number of translations to process in one batch'
+        )
 
     def translate_item(self, trans, provider, language, translate_all):
         if len(trans.field_value) > 0 and not translate_all:
@@ -43,6 +57,8 @@ class Command(BaseCommand):
         language = options['language']
         provider_name = options['provider']
         translate_all = options['all']
+        workers = options['workers']
+        batch_size = options['batch_size']
 
         if language not in [lang[0] for lang in settings.LANGUAGES]:
             self.stdout.write(f'Unknown language: {language}')
@@ -59,14 +75,16 @@ class Command(BaseCommand):
             return
 
         provider = provider_class()
-        translations = fetch_translatable_fields(language)
+        translations_qs = fetch_translatable_fields(language)
 
-        threads = []
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = [
+                executor.submit(self.translate_item, trans, provider, language, translate_all)
+                for trans in translations_qs.iterator(chunk_size=batch_size)
+            ]
 
-        for trans in translations:
-            t = threading.Thread(target=self.translate_item, args=(trans, provider, language, translate_all))
-            t.start()
-            threads.append(t)
-
-        for t in threads:
-            t.join()
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"Error occurred: {e}"))
