@@ -146,7 +146,7 @@ python manage.py convert_locales_to_drt_format --locale locale --remove-used
 
 ### Overview
 
-Our library provides an easy way to automatically translate fields in your Django models using popular translation providers such as Google Translate and  AWS Translate. This guide will help you configure and use this feature.
+Our library provides an easy way to automatically translate fields in your Django models using popular translation providers such as Google Translate, AWS Translate and DeepL. This guide will help you configure and use this feature.
 
 ### Requirements
 
@@ -166,17 +166,23 @@ AWS_SECRET_ACCESS_KEY = 'your aws secret access key here'
 AWS_REGION_NAME = 'your aws region name here'
 ```
 
+For DeepL Translate:
+
+```python
+# settings.py
+DEEPL_AUTH_KEY = 'your DeepL auth key here'
+```
+
 ### Running the Admin Command
 
 You can use the provided admin command to translate your model fields. The command accepts the following arguments:
 
 - `--language`: The target language code to which you want to translate.
-- `--provider`: The translation provider to use Google or AWS.
+- `--provider`: The translation provider to use: `google_v2`, `aws`, `deepl`.
 - `--all`: Use this flag if you want to overwrite existing translations.
 - `--workers`: (Optional) Number of worker threads to use for concurrent processing. Default is 4.
-- `--batch_size`: (Optional) Number of translations to fetch from the database at once. Helps in optimizing memory usage. Default is 200.
 
-Run the admin command as follows:
+**Run the admin command as follows:**
 
 ```bash
 python manage.py translate_models --language=es --provider=google_v2
@@ -184,7 +190,7 @@ python manage.py translate_models --language=es --provider=google_v2
 
 This will translate all translatable fields to Spanish using Google Translate.
 
-To overwrite existing translations:
+**To overwrite existing translations:**
 
 ```bash
 python manage.py translate_models --language=es --provider=google_v2 --all

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django_restful_translator',
-    version='0.5.0',
+    version='0.6.0',
     author='Alex Ivanchyk',
     author_email='alexander.ivanchik@gmail.com',
     description='A Django application providing translation functionalities for Django Rest Framework',
@@ -15,7 +15,8 @@ setup(
         'djangorestframework>=3.11',
         'polib>=1.1',
         'google-cloud-translate>=2.0.4',
-        'boto3>=1.26.31'
+        'boto3>=1.26.31',
+        'deepl>=1.16.1'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

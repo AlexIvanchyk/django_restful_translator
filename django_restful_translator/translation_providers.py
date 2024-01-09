@@ -1,7 +1,7 @@
-import os
 from abc import ABC, abstractmethod
 
 import boto3
+import deepl
 from django.conf import settings
 from google.cloud import translate_v2
 
@@ -40,3 +40,16 @@ class AWSTranslateProvider(TranslationProvider):
         response = self.client.translate_text(Text=text, SourceLanguageCode=source_language,
                                               TargetLanguageCode=target_language)
         return response['TranslatedText']
+
+
+class DeeplTranslateProvider(TranslationProvider):
+    name = "deepl"
+
+    def __init__(self):
+        if not hasattr(settings, 'DEEPL_AUTH_KEY'):
+            raise ValueError("DEEPL_AUTH_KEY must be set in settings")
+        self.client = deepl.Translator(settings.DEEPL_AUTH_KEY)
+
+    def translate_text(self, text, source_language, target_language):
+        result = self.client.translate_text(text, source_lang=source_language, target_lang=target_language)
+        return result.text

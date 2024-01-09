@@ -3,3 +3,4 @@ djangorestframework>=3.11
 polib>=1.1
 google-cloud-translate>=2.0.4
 boto3>=1.26.31
+deepl>=1.16.1

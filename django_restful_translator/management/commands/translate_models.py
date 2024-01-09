@@ -80,7 +80,7 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = [
                 executor.submit(self.translate_item, trans, provider, language, translate_all)
-                for trans in translations_qs.iterator(chunk_size=batch_size)
+                for trans in translations_qs
             ]
 
             for future in as_completed(futures):

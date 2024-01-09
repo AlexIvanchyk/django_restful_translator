@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
     def create_new_entry(self, entry, objects_with_fields):
         tcomments = [
-            f"{obj._meta.model_name}__{field_name}__{obj.id}"
+            f"{obj._meta.model_name}__{field_name}__{obj.pk}"
             for obj, field_name in objects_with_fields
         ]
         return polib.POEntry(
