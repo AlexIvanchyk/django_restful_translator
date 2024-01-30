@@ -1,10 +1,13 @@
+import html
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from django_restful_translator.translation_providers import TranslationProvider
-from django_restful_translator.utils import fetch_translatable_fields
+from django_restful_translator.utils import fetch_translatable_fields, replace_placeholders_with_tokens, \
+    replace_tokens_with_placeholders
 
 
 class Command(BaseCommand):
@@ -45,9 +48,11 @@ class Command(BaseCommand):
         if len(trans.field_value) > 0 and not translate_all:
             return
         text = getattr(trans.content_object, trans.field_name)
-        translated_text = provider.translate_text(text, settings.LANGUAGE_CODE, language)
-
-        trans.field_value = translated_text
+        text_with_tokens, tokens = replace_placeholders_with_tokens(text)
+        translated_text = provider.translate_text(text_with_tokens, settings.LANGUAGE_CODE, language)
+        translated_text = replace_tokens_with_placeholders(translated_text, tokens)
+        decoded_text = html.unescape(translated_text)
+        trans.field_value = decoded_text
         trans.save()
 
         self.stdout.write(

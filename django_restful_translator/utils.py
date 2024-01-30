@@ -1,4 +1,5 @@
 import os
+import re
 from django.conf import settings
 from django.apps import apps
 from django.utils.translation import get_language
@@ -61,3 +62,21 @@ def get_po_metadata():
         'Content-Type': 'text/plain; charset=UTF-8',
         'Content-Transfer-Encoding': '8bit',
     }
+
+
+def replace_placeholders_with_tokens(text):
+    placeholders = re.findall(r'\{.*?\}', text)
+    tokens = {}
+    counter = 1
+    for placeholder in placeholders:
+        token = f"__TOKEN{counter}__"
+        counter += 1
+        tokens[token] = placeholder
+        text = text.replace(placeholder, token)
+    return text, tokens
+
+
+def replace_tokens_with_placeholders(text, tokens):
+    for token, placeholder in tokens.items():
+        text = text.replace(token, placeholder)
+    return text
