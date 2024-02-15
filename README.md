@@ -1,6 +1,8 @@
 # django_restful_translator
 
-`django_restful_translator` is a Django library for managing and serving translations of Django models while keeping the original values untouched. This package is designed to integrate seamlessly with Django REST framework.
+`django_restful_translator`is a Django library designed to enhance the internationalization of Django models by providing tools for managing and serving model translations. It integrates seamlessly with the Django REST Framework, offering model translation without altering original model values, and supports automatic translation through external services.
+
+
 
 ## Functionality
 
@@ -12,9 +14,9 @@
 
 - **REST API support**: Provided serializers (`TranslatableDBSerializer`, `TranslatableDBDictSerializer`, `TranslatableGettextSerializer`, `TranslatableGettextDictSerializer`) ensure translated fields are properly serialized in API responses.
 
-- **Translation synchronization**: Commands `generate_locales` and `update_database_translations` export translations to `.po` files and import them back into the database, keeping translations synchronized across different environments.
+- **Translation synchronization**: Commands `drt_makemessages` and `drt_update_database` export translations to `.po` files and import them back into the database, keeping translations synchronized across different environments.
 
-- **Automatic Translation**: The library supports automatic translation of model fields through popular translation providers like Google Translate and AWS Translate. The feature is configurable and can be run via an admin command.
+- **Automatic Translation**: The library supports automatic translation of model fields through popular translation providers like Google Translate, AWS Translate and Deepl. The feature is configurable and can be run via an admin command.
 
 ## Advantages
 
@@ -121,13 +123,13 @@ YourModel.objects.all().prefetch_related('translations')
 6. Run the provided management commands to generate `.po` files and update the database with translations.
 
 ```bash
-python manage.py generate_locales
+python manage.py drt_makemessages
 ```
 ```bash
-python manage.py update_database_translations
+python manage.py drt_update_database
 ```
 7. Converting Existing `.po` Files to DRT Format. 
-Utilize the management command `convert_locales_to_drt_format` to transform existing `.po` files into a format suitable for use with the Django Restful Translator (DRT). The command accepts the following arguments:
+Utilize the management command `drt_convert_locales` to transform existing `.po` files into a format suitable for use with the Django Restful Translator (DRT). The command accepts the following arguments:
 - `--locale`: The directory where the existing `.po` files are located and will be read from. 
 - `--remove-used`: When this option is used, the entries that are converted and added to the new `.po` file formatted for DRT will be removed from the original `.po` file, keeping it clean from already processed entries.
 
@@ -135,11 +137,11 @@ Utilize the management command `convert_locales_to_drt_format` to transform exis
 To convert `.po` files without modifying the original file:
 
 ```bash
-python manage.py convert_locales_to_drt_format --locale locale
+python manage.py drt_convert_locales --locale locale
 ```
 To remove entries in the original `.po` file that are used/converted in the new DRT format:
 ```bash
-python manage.py convert_locales_to_drt_format --locale locale --remove-used
+python manage.py drt_convert_locales --locale locale --remove-used
 ```
 
 ## Automatic Translation Feature Guide
@@ -177,7 +179,8 @@ DEEPL_AUTH_KEY = 'your DeepL auth key here'
 
 You can use the provided admin command to translate your model fields. The command accepts the following arguments:
 
-- `--language`: The target language code to which you want to translate.
+- `--language`: The language code to which you want to translate.
+- `--target_language`: The provider target language if it differs from the setting language
 - `--provider`: The translation provider to use: `google_v2`, `aws`, `deepl`.
 - `--all`: Use this flag if you want to overwrite existing translations.
 - `--workers`: (Optional) Number of worker threads to use for concurrent processing. Default is 4.
@@ -185,7 +188,7 @@ You can use the provided admin command to translate your model fields. The comma
 **Run the admin command as follows:**
 
 ```bash
-python manage.py translate_models --language=es --provider=google_v2
+python manage.py drt_translate_models --language=es --provider=google_v2
 ```
 
 This will translate all translatable fields to Spanish using Google Translate.
@@ -193,7 +196,7 @@ This will translate all translatable fields to Spanish using Google Translate.
 **To overwrite existing translations:**
 
 ```bash
-python manage.py translate_models --language=es --provider=google_v2 --all
+python manage.py drt_translate_models --language=es --provider=google_v2 --all
 ```
 
 ### Verifying Translations

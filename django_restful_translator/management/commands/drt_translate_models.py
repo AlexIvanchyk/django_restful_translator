@@ -21,6 +21,12 @@ class Command(BaseCommand):
             help='Specify the language to which the fields should be translated'
         )
         parser.add_argument(
+            '--target_language',
+            type=str,
+            help='Specify the provider target language if it differs from the setting language',
+            default=None
+        )
+        parser.add_argument(
             '--provider',
             type=str,
             help='Specify the translation provider to use for the translation. Available providers: ' + ', '.join(
@@ -37,33 +43,27 @@ class Command(BaseCommand):
             default=4,
             help='Number of worker threads to use for translation'
         )
-        parser.add_argument(
-            '--batch-size',
-            type=int,
-            default=200,
-            help='Number of translations to process in one batch'
-        )
 
-    def translate_item(self, trans, provider, language, translate_all):
+    def translate_item(self, trans, provider, target_language, translate_all):
         if len(trans.field_value) > 0 and not translate_all:
             return
         text = getattr(trans.content_object, trans.field_name)
         text_with_tokens, tokens = replace_placeholders_with_tokens(text)
-        translated_text = provider.translate_text(text_with_tokens, settings.LANGUAGE_CODE, language)
+        translated_text = provider.translate_text(text_with_tokens, settings.LANGUAGE_CODE, target_language)
         translated_text = replace_tokens_with_placeholders(translated_text, tokens)
         decoded_text = html.unescape(translated_text)
         trans.field_value = decoded_text
         trans.save()
 
         self.stdout.write(
-            f'Translated {trans.content_object._meta.model_name} field {trans.field_name} to {language}')
+            f'Translated {trans.content_object._meta.model_name} field {trans.field_name} to {target_language}')
 
     def handle(self, *args, **options):
         language = options['language']
+        target_language = options.pop('target_language', language)
         provider_name = options['provider']
         translate_all = options['all']
         workers = options['workers']
-        batch_size = options['batch_size']
 
         if language not in [lang[0] for lang in settings.LANGUAGES]:
             self.stdout.write(f'Unknown language: {language}')
@@ -84,7 +84,7 @@ class Command(BaseCommand):
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = [
-                executor.submit(self.translate_item, trans, provider, language, translate_all)
+                executor.submit(self.translate_item, trans, provider, target_language, translate_all)
                 for trans in translations_qs
             ]
 
