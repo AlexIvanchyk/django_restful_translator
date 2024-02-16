@@ -80,3 +80,8 @@ def replace_tokens_with_placeholders(text, tokens):
     for token, placeholder in tokens.items():
         text = text.replace(token, placeholder)
     return text
+
+
+def get_batches(data, batch_size):
+    for i in range(0, len(data), batch_size):
+        yield data[i:i + batch_size]

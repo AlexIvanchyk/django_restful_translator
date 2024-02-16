@@ -16,7 +16,7 @@
 
 - **Translation synchronization**: Commands `drt_makemessages` and `drt_update_database` export translations to `.po` files and import them back into the database, keeping translations synchronized across different environments.
 
-- **Automatic Translation**: The library supports automatic translation of model fields through popular translation providers like Google Translate, AWS Translate and Deepl. The feature is configurable and can be run via an admin command.
+- **Automatic Translation**: The library supports automatic translation of model fields through popular translation providers like Google Translate v2, v3, AWS Translate and Deepl. The feature is configurable and can be run via an admin command.
 
 ## Advantages
 
@@ -148,18 +148,32 @@ python manage.py drt_convert_locales --locale locale --remove-used
 
 ### Overview
 
-Our library provides an easy way to automatically translate fields in your Django models using popular translation providers such as Google Translate, AWS Translate and DeepL. This guide will help you configure and use this feature.
+Our library provides an easy way to automatically translate fields in your Django models using popular translation providers such as Google Translate v2, v3, AWS Translate and DeepL. This guide will help you configure and use this feature.
 
 ### Requirements
 
 - Make sure the necessary credentials for your chosen translation provider are available in your Django settings file.
 
-For Google Translate v2:
+### For Google Translate v2:
 
 You can use the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to provide the location of a credential JSON file.
 https://cloud.google.com/docs/authentication/application-default-credentials#GAC
 
-For AWS Translate:
+### For Google Translate v3:
+
+You can use the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to provide the location of a credential JSON file.
+https://cloud.google.com/docs/authentication/application-default-credentials#GAC
+
+#### Configuring Django Settings
+To integrate Google Translate API v3 with your Django application, you need to add the following configuration settings in your settings.py file. These settings will specify your Google Cloud project name and the location for the Translate API:
+
+```python
+# settings.py
+GOOGLE_CLOUD_PROJECT = 'your google cloud project id'
+GOOGLE_CLOUD_LOCATION = 'your google cloud location'
+```
+
+### For AWS Translate:
 
 ```python
 # settings.py
@@ -168,7 +182,7 @@ AWS_SECRET_ACCESS_KEY = 'your aws secret access key here'
 AWS_REGION_NAME = 'your aws region name here'
 ```
 
-For DeepL Translate:
+### For DeepL Translate:
 
 ```python
 # settings.py
@@ -181,14 +195,15 @@ You can use the provided admin command to translate your model fields. The comma
 
 - `--language`: The language code to which you want to translate.
 - `--target_language`: The provider target language if it differs from the setting language
-- `--provider`: The translation provider to use: `google_v2`, `aws`, `deepl`.
-- `--all`: Use this flag if you want to overwrite existing translations.
+- `--provider`: The translation provider to use: `google_v2`, `google_v3`, `aws`, `deepl`.
+- `--all`: (Optional) Use this flag if you want to overwrite existing translations.
 - `--workers`: (Optional) Number of worker threads to use for concurrent processing. Default is 4.
+- `--without_batch`: (Optional) One provider request per one unit of text.
 
 **Run the admin command as follows:**
 
 ```bash
-python manage.py drt_translate_models --language=es --provider=google_v2
+python manage.py drt_translate_models --language=es --provider=google_v3
 ```
 
 This will translate all translatable fields to Spanish using Google Translate.
@@ -196,7 +211,7 @@ This will translate all translatable fields to Spanish using Google Translate.
 **To overwrite existing translations:**
 
 ```bash
-python manage.py drt_translate_models --language=es --provider=google_v2 --all
+python manage.py drt_translate_models --language=es --provider=google_v3 --all
 ```
 
 ### Verifying Translations
