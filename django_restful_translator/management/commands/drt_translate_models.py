@@ -69,7 +69,7 @@ class Command(BaseCommand):
         tokens_list = []
 
         for translation in translations:
-            if len(translations.field_value) > 0 and not translate_all:
+            if len(translation.field_value) > 0 and not translate_all:
                 continue
             original_text = getattr(translation.content_object, translation.field_name)
             text_with_tokens, tokens = replace_placeholders_with_tokens(original_text)
