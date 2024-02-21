@@ -67,7 +67,6 @@ class Command(BaseCommand):
         content_to_translate = []
         original_translations = []
         tokens_list = []
-
         for translation in translations:
             if len(translation.field_value) > 0 and not translate_all:
                 continue
@@ -89,11 +88,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         language = options['language']
-        target_language = options.pop('target_language', language)
+        target_language = options['target_language']
         provider_name = options['provider']
         translate_all = options['all']
         workers = options['workers']
         without_batch = options['without_batch']
+
+        if not target_language:
+            target_language = language
+
 
         if language not in [lang[0] for lang in settings.LANGUAGES]:
             self.stdout.write(f'Unknown language: {language}')
