@@ -13,3 +13,8 @@ class GetTextListField(serializers.ListField):
         for value in values:
             output.append(str(_(value)) or value)
         return output
+
+
+class AutoTranslatableDictField(serializers.DictField):
+    def to_representation(self, value):
+        return {}

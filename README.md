@@ -12,7 +12,7 @@
 
 - **Translation management**: Admin inlines for managing translations from the Django Admin site.
 
-- **REST API support**: Provided serializers (`TranslatableDBSerializer`, `TranslatableDBDictSerializer`, `TranslatableGettextSerializer`, `TranslatableGettextDictSerializer`) ensure translated fields are properly serialized in API responses.
+- **REST API support**: Provided serializers (`TranslatableDBSerializer`, `TranslatableDBDictSerializer`, `TranslatableGettextSerializer`, `TranslatableGettextDictSerializer`, `TranslatableWritebleDBDictSerializer`) ensure translated fields are properly serialized in API responses.
 
 - **Translation synchronization**: Commands `drt_makemessages` and `drt_update_database` export translations to `.po` files and import them back into the database, keeping translations synchronized across different environments.
 

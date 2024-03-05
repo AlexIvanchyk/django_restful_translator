@@ -1,12 +1,12 @@
-from django.shortcuts import render
-
 from rest_framework import generics
+
 from .models import ExampleModel
 from .serializers import (
     ExampleModelTranslatableDBSerializer,
     ExampleModelTranslatableDBDictSerializer,
     ExampleModelTranslatableGettextSerializer,
-    ExampleModelTranslatableGettextDictSerializer
+    ExampleModelTranslatableGettextDictSerializer,
+    ExampleModelTranslatableWritebleDBDictSerializer
 )
 
 
@@ -28,3 +28,13 @@ class ExampleModelTranslatableGettextView(generics.ListCreateAPIView):
 class ExampleModelTranslatableGettextDictView(generics.ListCreateAPIView):
     queryset = ExampleModel.objects.all()
     serializer_class = ExampleModelTranslatableGettextDictSerializer
+
+
+class ExampleModelTranslatableWritebleDBDictView(generics.ListCreateAPIView):
+    queryset = ExampleModel.objects.all()
+    serializer_class = ExampleModelTranslatableWritebleDBDictSerializer
+
+
+class ExampleModelTranslatableWritebleDBDictDetails(generics.RetrieveUpdateAPIView):
+    queryset = ExampleModel.objects.all()
+    serializer_class = ExampleModelTranslatableWritebleDBDictSerializer

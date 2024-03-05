@@ -49,9 +49,7 @@ class Command(BaseCommand):
             help='One request per one unit of text'
         )
 
-    def translate_item(self, translation, provider, target_language, translate_all):
-        if len(translation.field_value) > 0 and not translate_all:
-            return
+    def translate_item(self, translation, provider, target_language):
         text = getattr(translation.content_object, translation.field_name)
         text_with_tokens, tokens = replace_placeholders_with_tokens(text)
         translated_text = provider.translate_text(text_with_tokens, settings.LANGUAGE_CODE, target_language)
@@ -63,13 +61,11 @@ class Command(BaseCommand):
         self.stdout.write(
             f'Translated {translation.content_object._meta.model_name} field {translation.field_name} to {target_language}')
 
-    def translate_batch(self, translations, provider, target_language, translate_all=False):
+    def translate_batch(self, translations, provider, target_language):
         content_to_translate = []
         original_translations = []
         tokens_list = []
         for translation in translations:
-            if len(translation.field_value) > 0 and not translate_all:
-                continue
             original_text = getattr(translation.content_object, translation.field_name)
             text_with_tokens, tokens = replace_placeholders_with_tokens(original_text)
             content_to_translate.append(text_with_tokens)
@@ -97,7 +93,6 @@ class Command(BaseCommand):
         if not target_language:
             target_language = language
 
-
         if language not in [lang[0] for lang in settings.LANGUAGES]:
             self.stdout.write(f'Unknown language: {language}')
             return
@@ -114,12 +109,20 @@ class Command(BaseCommand):
 
         provider = provider_class()
         translations_qs = fetch_translatable_fields(language)
+        for_translation_list = []
+        if translate_all is False:
+            for translation in translations_qs:
+                if len(translation.field_value) > 0:
+                    continue
+                for_translation_list.append(translation)
+        else:
+            for_translation_list = translations_qs
 
         if without_batch or provider.batch_size == 1:
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 futures = [
-                    executor.submit(self.translate_item, trans, provider, target_language, translate_all)
-                    for trans in translations_qs
+                    executor.submit(self.translate_item, trans, provider, target_language)
+                    for trans in for_translation_list
                 ]
 
                 for future in as_completed(futures):
@@ -130,8 +133,8 @@ class Command(BaseCommand):
         else:
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 futures = [
-                    executor.submit(self.translate_batch, batch, provider, target_language, translate_all)
-                    for batch in get_batches(translations_qs, provider.batch_size)
+                    executor.submit(self.translate_batch, batch, provider, target_language)
+                    for batch in get_batches(for_translation_list, provider.batch_size)
                 ]
 
                 for future in as_completed(futures):
