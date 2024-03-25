@@ -57,15 +57,13 @@ class TranslatableWritebleDBDictSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         translations_data = self.extract_translations_data(validated_data)
-        instance = self.Meta.model.objects.create(**validated_data)
+        instance = super().create(validated_data)
         self.update_translations(instance, translations_data)
         return instance
 
     def update(self, instance, validated_data):
         translations_data = self.extract_translations_data(validated_data)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
         self.update_translations(instance, translations_data)
         return instance
 
