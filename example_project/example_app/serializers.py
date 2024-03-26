@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from django_restful_translator.drf.fields import AutoTranslatableDictField
 from django_restful_translator.drf.serializers import TranslatableDBSerializer, TranslatableDBDictSerializer, \
-    TranslatableGettextSerializer, TranslatableGettextDictSerializer, TranslatableWritebleDBDictSerializer
+    TranslatableGettextSerializer, TranslatableGettextDictSerializer, TranslatableWritableDBDictSerializer
 from .models import ExampleModel
 
 
@@ -20,8 +20,8 @@ class ExampleModelTranslatableDBDictSerializer(ExampleModelBaseSerializer, Trans
     pass
 
 
-class ExampleModelTranslatableWritebleDBDictSerializer(ExampleModelBaseSerializer,
-                                                       TranslatableWritebleDBDictSerializer):
+class ExampleModelTranslatableWritableDBDictSerializer(ExampleModelBaseSerializer,
+                                                       TranslatableWritableDBDictSerializer):
     name = AutoTranslatableDictField(required=True)
 
 

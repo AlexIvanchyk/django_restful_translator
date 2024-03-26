@@ -6,7 +6,7 @@ from .serializers import (
     ExampleModelTranslatableDBDictSerializer,
     ExampleModelTranslatableGettextSerializer,
     ExampleModelTranslatableGettextDictSerializer,
-    ExampleModelTranslatableWritebleDBDictSerializer
+    ExampleModelTranslatableWritableDBDictSerializer
 )
 
 
@@ -32,9 +32,9 @@ class ExampleModelTranslatableGettextDictView(generics.ListCreateAPIView):
 
 class ExampleModelTranslatableWritebleDBDictView(generics.ListCreateAPIView):
     queryset = ExampleModel.objects.all()
-    serializer_class = ExampleModelTranslatableWritebleDBDictSerializer
+    serializer_class = ExampleModelTranslatableWritableDBDictSerializer
 
 
 class ExampleModelTranslatableWritebleDBDictDetails(generics.RetrieveUpdateAPIView):
     queryset = ExampleModel.objects.all()
-    serializer_class = ExampleModelTranslatableWritebleDBDictSerializer
+    serializer_class = ExampleModelTranslatableWritableDBDictSerializer

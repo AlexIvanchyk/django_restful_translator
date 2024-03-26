@@ -34,9 +34,9 @@ class TranslatableDBDictSerializer(serializers.ModelSerializer):
         return data
 
 
-class TranslatableWritebleDBDictSerializer(serializers.ModelSerializer):
+class TranslatableWritableDBDictSerializer(serializers.ModelSerializer):
     class Meta:
-        model = None
+        model = None  # Set your model
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,7 +47,6 @@ class TranslatableWritebleDBDictSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-
         for field_name in instance.translatable_fields:
             if field_name in self.fields:
                 data[field_name] = {settings.LANGUAGE_CODE: getattr(instance, field_name)} | get_translation(instance,
@@ -58,25 +57,32 @@ class TranslatableWritebleDBDictSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         translations_data = self.extract_translations_data(validated_data)
         instance = super().create(validated_data)
-        self.update_translations(instance, translations_data)
+        self.update_translations(instance, translations_data, skip_primary=True)
         return instance
 
     def update(self, instance, validated_data):
         translations_data = self.extract_translations_data(validated_data)
         instance = super().update(instance, validated_data)
-        self.update_translations(instance, translations_data)
+        self.update_translations(instance, translations_data, skip_primary=True)
         return instance
 
     def extract_translations_data(self, validated_data):
         translations_data = {}
         for field in self.Meta.model.translatable_fields:
             if field in validated_data and isinstance(validated_data[field], dict):
-                translations_data[field] = validated_data.pop(field)
+                primary_lang_value = validated_data[field].pop(settings.LANGUAGE_CODE, None)
+                if validated_data[field]:
+                    translations_data[field] = validated_data.pop(field)
+                if primary_lang_value is not None:
+                    validated_data[field] = primary_lang_value
+
         return translations_data
 
-    def update_translations(self, instance, translations_data):
+    def update_translations(self, instance, translations_data, skip_primary=False):
         for field, value in translations_data.items():
             for lang_code, text in value.items():
+                if skip_primary and lang_code == settings.LANGUAGE_CODE:
+                    continue
                 self.set_translation(instance, field, lang_code, text)
 
     def set_translation(self, instance, field, lang_code, text):
@@ -88,9 +94,6 @@ class TranslatableWritebleDBDictSerializer(serializers.ModelSerializer):
                 language=lang_code,
                 defaults={'field_value': text}
             )
-        else:
-            setattr(instance, field, text)
-            instance.save()
 
 
 class TranslatableGettextSerializer(serializers.ModelSerializer):

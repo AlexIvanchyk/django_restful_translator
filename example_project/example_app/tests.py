@@ -57,11 +57,11 @@ class ExampleModelAPITests(APITestCase):
     def test_writeble_db_dict_list_create(self):
         url = reverse('example_app:translatable_writeble_db_dict')
         data = {
-            'name': {'es': 'Hola'},
+            'name': {'en': 'Hello', 'es': 'Hola'},
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertDictEqual(response.data['name'], {'en': None, 'es': 'Hola'})
+        self.assertDictEqual(response.data['name'], {'en': 'Hello', 'es': 'Hola'})
 
     def test_writeble_db_dict_list_update(self):
         url = reverse('example_app:translatable_writeble_db_dict', kwargs={'pk': 1})
