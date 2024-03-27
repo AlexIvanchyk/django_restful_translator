@@ -70,6 +70,9 @@ class TranslatableWritableDBDictSerializer(serializers.ModelSerializer):
         translations_data = {}
         for field in self.Meta.model.translatable_fields:
             if field in validated_data and isinstance(validated_data[field], dict):
+                if len(validated_data[field]) == 0:
+                    validated_data.pop(field)
+                    continue
                 primary_lang_value = validated_data[field].pop(settings.LANGUAGE_CODE, None)
                 if validated_data[field]:
                     translations_data[field] = validated_data.pop(field)
