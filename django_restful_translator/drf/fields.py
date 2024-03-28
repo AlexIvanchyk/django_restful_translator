@@ -15,6 +15,6 @@ class GetTextListField(serializers.ListField):
         return output
 
 
-class AutoTranslatableDictField(serializers.DictField):
+class AutoTranslatableJsonField(serializers.JSONField):
     def to_representation(self, value):
         return {}

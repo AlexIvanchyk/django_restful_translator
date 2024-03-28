@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from django_restful_translator.models import Translation
 from django_restful_translator.utils import get_translation
-from .fields import GetTextCharField, AutoTranslatableDictField
+from .fields import GetTextCharField, AutoTranslatableJsonField
 
 
 class TranslatableDBSerializer(serializers.ModelSerializer):
@@ -42,8 +42,8 @@ class TranslatableWritableDBDictSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         for field_name in self.Meta.model.translatable_fields:
             if field_name in self.fields:
-                if not isinstance(self.fields[field_name], AutoTranslatableDictField):
-                    self.fields[field_name] = AutoTranslatableDictField(required=False)
+                if not isinstance(self.fields[field_name], AutoTranslatableJsonField):
+                    self.fields[field_name] = AutoTranslatableJsonField(required=False, default=dict)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
