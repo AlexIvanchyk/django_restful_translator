@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django_restful_translator',
-    version='0.9.3',
+    version='0.9.4',
     author='Alex Ivanchyk',
     author_email='alexander.ivanchik@gmail.com',
     description='A Django application providing translation functionalities for Django Rest Framework',
