@@ -1,79 +1,61 @@
 import os
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
-import polib
-from django.apps import apps
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 
-from django_restful_translator.models import TranslatableModel, Translation
+from django_restful_translator.models import Translation
+from django_restful_translator.processors.model import TranslationModelProcessor, TranslationFromPOEntry
+from django_restful_translator.processors.po import DRTPoFileManager
+from django_restful_translator.utils import handle_futures
 
 
 class Command(BaseCommand):
     help = 'Import .po files to DB translations'
 
-    def handle_language(self, language_set):
-        language = language_set[0]
-
+    def handle_language(self, language_code):
         # Skip default language
-        if language == settings.LANGUAGE_CODE:
+        if language_code == settings.LANGUAGE_CODE:
+            self.stdout.write(self.style.WARNING(f"Skipping {language_code} because it is the default language."))
             return
 
-        # Open the .po file for this language
-        po_file_path = os.path.join(settings.BASE_DIR, 'drt_locale', language, 'LC_MESSAGES', 'django.po')
+        # Create a PO file manager instance
+        po_file_manager = DRTPoFileManager()
+        po_file_path = po_file_manager.get_po_file_path(language_code)
 
         # Check the last modification time of the .po file
         if os.path.isfile(po_file_path):
             po_file_mod_time = os.path.getmtime(po_file_path)
             try:
                 # Get the last update time of the Translation objects for the current language
-                last_translation_update = Translation.objects.filter(language=language).latest(
+                last_translation_update = Translation.objects.filter(language=language_code).latest(
                     'updated_at').updated_at.timestamp()
                 # Only proceed if the .po file is newer than the last update in the database
                 if po_file_mod_time <= last_translation_update:
-                    print(f"Skipping {language} because the .po file is older than the last update in the database")
+                    mess = (f"Skipping {language_code} "
+                            f"because the .po file is older than the last update in the database")
+                    self.stdout.write(
+                        self.style.WARNING(mess))
                     return
             except Translation.DoesNotExist:
                 pass
-
-        if not os.path.isfile(po_file_path):
+        else:
+            self.stdout.write(self.style.WARNING(f"Skipping {language_code} because the .po file does not exist"))
             return
 
-        po = polib.pofile(po_file_path)
+        po_file = po_file_manager.load_po_file(po_file_path)
+        translation_processor = TranslationModelProcessor(language_code)
+        translatable_models = translation_processor.get_translatable_models()
 
-        models = apps.get_models()
-        translatable_models = [model for model in models if issubclass(model, TranslatableModel)]
-
-        # Iterate over each entry in the .po file
-        for entry in po:
-            for comment in entry.tcomment.splitlines():
-                model_name, field_name, object_id = comment.split("__")
-                model = next((m for m in translatable_models if m._meta.model_name == model_name), None)
-                if not model:
-                    continue
-                field_value = entry.msgstr
-                if field_value == "":
-                    continue
-                # Fetch or create the Translation object
-                trans, created = Translation.objects.update_or_create(
-                    content_type=ContentType.objects.get_for_model(model),
-                    object_id=object_id,
-                    field_name=field_name,
-                    language=language,
-                    defaults={"field_value": field_value}
-                )
-                # If the Translation object already existed, update it
-                if not created:
-                    trans.field_value = entry.msgstr
-                    trans.save()
+        # Process the PO file entries
+        for entry in po_file:
+            TranslationFromPOEntry(entry, language_code, translatable_models).update_or_create_translation()
 
     def handle(self, *args, **options):
-        threads = []
-        for language_set in settings.LANGUAGES:
-            t = threading.Thread(target=self.handle_language, args=(language_set,))
-            t.start()
-            threads.append(t)
+        futures = []
+        with ThreadPoolExecutor(max_workers=len(settings.LANGUAGES)) as executor:
+            for language_set in settings.LANGUAGES:
+                language = language_set[0]
+                futures.append(executor.submit(self.handle_language, language))
 
-        for t in threads:
-            t.join()
+            handle_futures(futures, self.stdout, self.style)

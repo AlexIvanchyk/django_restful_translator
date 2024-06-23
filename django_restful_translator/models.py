@@ -20,6 +20,9 @@ class Translation(models.Model):
     def __str__(self):
         return f'{self.content_type}__{self.field_name}__{self.object_id}'
 
+    def get_original_text(self):
+        return getattr(self.content_object, self.field_name)
+
 
 class TranslatableModel(models.Model):
     translations = GenericRelation(Translation)

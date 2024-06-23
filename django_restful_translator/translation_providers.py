@@ -1,13 +1,31 @@
 from abc import ABC, abstractmethod
 from typing import (
     Iterable,
-    Union,
+    Union
 )
 
 import boto3
 import deepl
 from django.conf import settings
 from google.cloud import translate_v2, translate
+
+
+class TranslationProviderFactory:
+    @staticmethod
+    def get_available_providers():
+        return {cls.name: cls for cls in TranslationProvider.__subclasses__()}
+
+    @staticmethod
+    def get_provider_names():
+        return [cls.name for cls in TranslationProvider.__subclasses__()]
+
+    @staticmethod
+    def get_provider(provider_name: str):
+        available_providers = TranslationProviderFactory.get_available_providers()
+        provider_class = available_providers.get(provider_name)
+        if not provider_class:
+            raise ValueError(f'Unknown provider: {provider_name}')
+        return provider_class()
 
 
 class TranslationProvider(ABC):
@@ -67,11 +85,10 @@ class GoogleV3TranslateProvider(TranslationProvider):
             results = self.client.translate_text(parent=parent, contents=text, source_language_code=source_language,
                                                  target_language_code=target_language)
             return [result.translated_text for result in results.translations]
-        else:
-            results = self.client.translate_text(parent=parent, contents=[text], source_language_code=source_language,
-                                                 target_language_code=target_language)
+        results = self.client.translate_text(parent=parent, contents=[text], source_language_code=source_language,
+                                             target_language_code=target_language)
 
-            return results.translations[0].translated_text
+        return results.translations[0].translated_text
 
 
 class DeeplTranslateProvider(TranslationProvider):
@@ -87,5 +104,4 @@ class DeeplTranslateProvider(TranslationProvider):
         results = self.client.translate_text(text, source_lang=source_language, target_lang=target_language)
         if isinstance(text, list):
             return [result.text for result in results]
-        else:
-            return results.text
+        return results.text

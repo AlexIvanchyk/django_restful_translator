@@ -8,13 +8,15 @@ class GetTextCharField(serializers.CharField):
 
 
 class GetTextListField(serializers.ListField):
-    def to_representation(self, values):
+    def to_representation(self, data):
         output = []
-        for value in values:
+        for value in data:
             output.append(str(_(value)) or value)
         return output
 
 
 class AutoTranslatableJsonField(serializers.JSONField):
     def to_representation(self, value):
-        return {}
+        if not isinstance(value, dict):
+            return value
+        return {lang: str(_(text)) for lang, text in value.items()}

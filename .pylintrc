@@ -1,0 +1,12 @@
+[MASTER]
+ignore-patterns=.*migrations/.*,manage.py,__init__.py
+
+[MESSAGES CONTROL]
+disable=
+    C0111,  # missing-docstring
+    R0903,  # too-few-public-methods
+    E1101   # no-member
+
+[FORMAT]
+max-line-length=120
+
