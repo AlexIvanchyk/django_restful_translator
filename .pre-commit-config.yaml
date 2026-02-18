@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: pytest-coverage
+        name: pytest with coverage
+        entry: bash -c 'poetry run coverage run -m pytest && poetry run coverage report'
+        language: system
+        pass_filenames: false
+        always_run: true

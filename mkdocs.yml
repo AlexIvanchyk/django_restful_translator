@@ -1,0 +1,44 @@
+site_name: django-localekit
+repo_url: https://github.com/AlexIvanchyk/django-localekit
+repo_name: AlexIvanchyk/django-localekit
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - DRF:
+    - DRF integration: drf/index.md
+    - Serializers: drf/serializers.md
+  - Commands: commands.md
+  - Translation Providers: providers.md
+  - Development: development.md
+  - Changelog: changelog.md
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - pymdownx.snippets:
+      base_path: "."

@@ -2,11 +2,11 @@ from rest_framework import generics
 
 from .models import ExampleModel
 from .serializers import (
-    ExampleModelTranslatableDBSerializer,
     ExampleModelTranslatableDBDictSerializer,
-    ExampleModelTranslatableGettextSerializer,
+    ExampleModelTranslatableDBSerializer,
     ExampleModelTranslatableGettextDictSerializer,
-    ExampleModelTranslatableWritableDBDictSerializer
+    ExampleModelTranslatableGettextSerializer,
+    ExampleModelTranslatableWritableDBDictSerializer,
 )
 
 
@@ -30,11 +30,11 @@ class ExampleModelTranslatableGettextDictView(generics.ListCreateAPIView):
     serializer_class = ExampleModelTranslatableGettextDictSerializer
 
 
-class ExampleModelTranslatableWritebleDBDictView(generics.ListCreateAPIView):
+class ExampleModelTranslatableWritableDBDictView(generics.ListCreateAPIView):
     queryset = ExampleModel.objects.all()
     serializer_class = ExampleModelTranslatableWritableDBDictSerializer
 
 
-class ExampleModelTranslatableWritebleDBDictDetails(generics.RetrieveUpdateAPIView):
+class ExampleModelTranslatableWritableDBDictDetails(generics.RetrieveUpdateAPIView):
     queryset = ExampleModel.objects.all()
     serializer_class = ExampleModelTranslatableWritableDBDictSerializer

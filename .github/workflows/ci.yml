@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: ruff check
+        run: poetry run ruff check .
+
+      - name: ruff format check
+        run: poetry run ruff format --check .
+
+  test:
+    name: Test (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        django-version: ["4.2", "5.1", "6.0"]
+        exclude:
+          # Django 5+ requires Python 3.10+
+          - python-version: "3.9"
+            django-version: "5.1"
+          - python-version: "3.9"
+            django-version: "6.0"
+          - python-version: "3.10"
+            django-version: "6.0"
+          # Django 6 requires Python 3.12+
+          - python-version: "3.11"
+            django-version: "6.0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Override Django version
+        run: poetry run pip install "Django~=${{ matrix.django-version }}"
+
+      - name: Run tests with coverage
+        run: poetry run coverage run -m pytest
+
+      - name: Coverage report
+        run: poetry run coverage report
+
+  trivy:
+    name: Trivy security scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif

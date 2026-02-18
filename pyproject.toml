@@ -1,2 +1,71 @@
-[tool.black]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "django-localekit"
+version = "1.0.0"
+description = "Database-backed model translations for Django and DRF, with optional .po file workflow and auto-translation support"
+readme = "README.md"
+authors = ["Alex Ivanchyk <alexander.ivanchik@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/AlexIvanchyk/django-localekit"
+keywords = ["django", "drf", "rest-framework", "translation", "i18n", "internationalization", "localization", "model-translation", "gettext"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Framework :: Django",
+]
+packages = [{ include = "django_localekit" }]
+include = ["django_localekit/py.typed"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4"
+Django = ">=4.2"
+djangorestframework = ">=3.15"
+polib = ">=1.1"
+google-cloud-translate = { version = ">=2.0.4", optional = true }
+boto3 = { version = ">=1.26.31", optional = true }
+deepl = { version = ">=1.16.1", optional = true }
+
+[tool.poetry.extras]
+google_v2 = ["google-cloud-translate"]
+google_v3 = ["google-cloud-translate"]
+aws = ["boto3"]
+deepl = ["deepl"]
+all = ["google-cloud-translate", "boto3", "deepl"]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8"
+coverage = "^7"
+pytest = "^8"
+pytest-django = "^4"
+mkdocs = "^1.6"
+mkdocs-material = "^9"
+pre-commit = "^4"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["django_localekit"]
+omit = ["*/migrations/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
+[tool.ruff]
 line-length = 120
+target-version = "py39"
+exclude = ["migrations"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "N", "W", "UP", "C4"]

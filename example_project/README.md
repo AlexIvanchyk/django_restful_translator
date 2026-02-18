@@ -5,54 +5,62 @@ Here's how to get the example project up and running:
 ### 1. Clone the Repository:
 
 ```bash
-git clone https://github.com/AlexIvanchyk/django_restful_translator.git
-cd django_restful_translator/example_project
+git clone https://github.com/AlexIvanchyk/django-localekit.git
+cd django-localekit/example_project
 ```
 
 ### 2. Install Dependencies:
 
+**Option A — from the example project (recommended):**
+
 ```bash
-pip install -r requirements.txt
+cd example_project
+poetry install
 ```
+
+This installs Django, Django REST Framework, and django-localekit from the parent directory (editable). Then run all commands below with `poetry run` or activate the env with `poetry shell`.
+
+**Option B — from the repository root:**
+
+```bash
+poetry install
+cd example_project
+```
+
+Use the root virtualenv for the rest of the steps (then you can run `python manage.py` without `poetry run`).
 
 ### 3. Set Up Database:
 
-First, make sure you have your database configured. Then, run the migrations:
+From the `example_project` directory, run the migrations (use `poetry run` if you installed with Option A):
 
 ```bash
-python manage.py migrate
+poetry run python manage.py migrate
 ```
 
 ### 4. Load Sample Data (Optional):
 
-To populate your database with sample data:
-
 ```bash
-python manage.py loaddata initial_data.json
+poetry run python manage.py loaddata initial_data.json
 ```
 
-### 5. Collects static files:
+### 5. Collect static files (optional):
 
 ```bash
-python manage.py collectstatic
+poetry run python manage.py collectstatic
 ```
 
 ### 6. Create Superuser:
 
-To create an admin user:
-
 ```bash
-python manage.py createsuperuser
+poetry run python manage.py createsuperuser
 ```
 
 Follow the prompts to create the user.
 
 ### 7. Run Development Server:
 
-Now you're ready to run the development server:
-
 ```bash
-python manage.py runserver
+poetry run python manage.py runserver
 ```
 
 Open your browser and go to `http://127.0.0.1:8000/` to see the project in action. Log in to the admin site at `http://127.0.0.1:8000/admin/` using the superuser credentials you created.

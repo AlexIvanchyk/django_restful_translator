@@ -1,15 +1,21 @@
 from rest_framework import serializers
 
-from django_restful_translator.drf.fields import AutoTranslatableJsonField
-from django_restful_translator.drf.serializers import TranslatableDBSerializer, TranslatableDBDictSerializer, \
-    TranslatableGettextSerializer, TranslatableGettextDictSerializer, TranslatableWritableDBDictSerializer
+from django_localekit.drf.fields import AutoTranslatableJsonField
+from django_localekit.drf.serializers import (
+    TranslatableDBDictSerializer,
+    TranslatableDBSerializer,
+    TranslatableGettextDictSerializer,
+    TranslatableGettextSerializer,
+    TranslatableWritableDBDictSerializer,
+)
+
 from .models import ExampleModel
 
 
 class ExampleModelBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExampleModel
-        fields = ('id', 'name', 'description')
+        fields = ("id", "name", "description")
 
 
 class ExampleModelTranslatableDBSerializer(ExampleModelBaseSerializer, TranslatableDBSerializer):
@@ -20,8 +26,9 @@ class ExampleModelTranslatableDBDictSerializer(ExampleModelBaseSerializer, Trans
     pass
 
 
-class ExampleModelTranslatableWritableDBDictSerializer(ExampleModelBaseSerializer,
-                                                       TranslatableWritableDBDictSerializer):
+class ExampleModelTranslatableWritableDBDictSerializer(
+    ExampleModelBaseSerializer, TranslatableWritableDBDictSerializer
+):
     name = AutoTranslatableJsonField(required=True)
 
 

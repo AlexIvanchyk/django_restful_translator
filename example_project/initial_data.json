@@ -16,7 +16,7 @@
     }
   },
   {
-    "model": "django_restful_translator.translation",
+    "model": "django_localekit.translation",
     "pk": 1,
     "fields": {
       "content_type": 8,
@@ -29,7 +29,7 @@
     }
   },
   {
-    "model": "django_restful_translator.translation",
+    "model": "django_localekit.translation",
     "pk": 2,
     "fields": {
       "content_type": 8,
@@ -42,7 +42,7 @@
     }
   },
   {
-    "model": "django_restful_translator.translation",
+    "model": "django_localekit.translation",
     "pk": 3,
     "fields": {
       "content_type": 8,

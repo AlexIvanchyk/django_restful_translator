@@ -1,7 +1,0 @@
-# requirements-dev.txt
--r requirements.txt
-
-pylint
-black
-mypy
-coverage
